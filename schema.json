@@ -35,8 +35,7 @@
     ]
   },
   "submission": {
-    "endpoint": "https://n8n.srv1159833.hstgr.cloud/webhook-test/audit-ia?token=Vn3pK8tQm2Yx7Lw9aR4cJ6uZ1sF5hD0eGqB3nP7rT9wX2kM",
-    "method": "POST",
+    "endpoint": "https://n8n.srv1159833.hstgr.cloud/webhook/audit-ia",    "method": "POST",
     "contentType": "application/json"
   },
   "sections": [
