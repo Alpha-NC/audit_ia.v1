@@ -323,7 +323,7 @@
 
     try{
       status.textContent = "Envoi en cours…";
-      const res = await fetch("https://corsproxy.io/?" + encodeURIComponent(endpoint,) {
+      const res = await fetch("https://corsproxy.io/?" + encodeURIComponent(endpoint), {
         method: "POST",
                       headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
