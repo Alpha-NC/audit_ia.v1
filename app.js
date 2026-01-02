@@ -55,7 +55,7 @@
       }
     }
 
-    // alias for simplicity (?source=linkedin)
+    // alias (?source=linkedin)
     const alias = (from, to) => { if (params[from] && !params[to]) params[to] = params[from]; };
     alias("source","utm_source");
     alias("medium","utm_medium");
@@ -181,15 +181,11 @@
       createEl("div", { style:"color:#64748B; line-height:1.55; margin-bottom:20px;" }, [
         "5 étapes rapides. Répondez simplement."
       ]),
-      createEl("button", { 
-        type:"button", 
-        class:"btn hero-start-btn",
-        id:"btnStart"
-      }, ["Commencer"])
+      createEl("button", { type:"button", class:"btn hero-start-btn", id:"btnStart" }, ["Commencer"])
     ]));
     pages.push(p1);
 
-    // Pages 2-5: sections (4 sections = 4 étapes)
+    // Pages 2-5: sections
     const mapping = [
       {step:2, idx:0},
       {step:3, idx:1},
@@ -208,7 +204,7 @@
       pages.push(page);
     });
 
-    // Page 6: contact + send (5ème étape)
+    // Page 6: contact + send
     const p6 = createEl("section", { class:"page", "data-step":"6" });
     const c6 = createEl("div", { class:"card" });
     c6.appendChild(createEl("h2", { class:"section-title" }, [(schema.contact && schema.contact.title) || "Coordonnées"]));
@@ -309,32 +305,60 @@
     evalAll();
   }
 
+  // ✅ IMPORTANT : envoi DIRECT au webhook n8n (pas de proxy) + validation de la réponse
   async function sendToN8N(payload){
     const status = $("#status");
     status.style.display = "block";
     status.classList.remove("error");
 
     const endpoint = wizard.schema && wizard.schema.submission && wizard.schema.submission.endpoint;
-    if (!endpoint || endpoint.includes("YOUR-N8N-DOMAIN") || endpoint.includes("CHANGE_ME")){
+    if (!endpoint){
       status.classList.add("error");
-      status.textContent = "⚠️ Endpoint n8n non configuré. Ouvrez schema.json et remplacez l’URL.";
+      status.textContent = "⚠️ Endpoint n8n non configuré (schema.json → submission.endpoint).";
       return false;
     }
 
     try{
       status.textContent = "Envoi en cours…";
-      const res = await fetch("https://corsproxy.io/?" + encodeURIComponent(endpoint), {
+
+      const res = await fetch(endpoint, {
         method: "POST",
-                      headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        redirect: "follow"
       });
-      if (!res.ok) throw new Error("HTTP " + res.status);
+
+      const raw = await res.text();
+      let data = null;
+      try{ data = raw ? JSON.parse(raw) : null; }catch(_){}
+
+      console.log("[AuditIA] POST", endpoint, "status:", res.status, "response:", data ?? raw);
+
+      if (!res.ok){
+        throw new Error("HTTP " + res.status);
+      }
+
+      // Si n8n renvoie autre chose que {"ok":true}, on ne “vend” pas du succès.
+      if (data && typeof data === "object" && "ok" in data && data.ok !== true){
+        status.classList.add("error");
+        status.textContent = "⚠️ n8n a répondu, mais pas en OK. Vérifiez votre workflow.";
+        return false;
+      }
+
+      // Si c’est du HTML (login / page n8n), c’est que tu n’as pas tapé le webhook.
+      if (!data && /<html/i.test(raw)){
+        status.classList.add("error");
+        status.textContent = "⚠️ Réponse HTML reçue (pas le webhook). Vérifie l’URL /webhook/audit-ia.";
+        return false;
+      }
+
       status.textContent = "✅ Réponses envoyées. Merci !";
       return true;
+
     }catch(err){
       console.error(err);
       status.classList.add("error");
-      status.textContent = "⚠️ Envoi bloqué (souvent CORS). Vérifiez les headers côté n8n.";
+      status.textContent = "⚠️ Envoi échoué. Vérifie l’URL webhook + CORS + workflow actif (voir Console/Network).";
       return false;
     }
   }
@@ -345,24 +369,18 @@
     wizard.step = step;
     wizard.pages.forEach(p => p.classList.toggle("active", p.getAttribute("data-step") === String(step)));
 
-    // Masquer l'objectif sur la page 1
+    // Masquer l'objectif sur la page 1 et 7
     const objective = $("#objective");
-    if (objective) {
-      objective.style.display = (step === 1) ? "none" : "block";
-    }
+    if (objective) objective.style.display = (step === 1 || step === 7) ? "none" : "block";
 
     $("#btnBack").style.display = (step === 1 || step === 7) ? "none" : "inline-block";
     $("#btnNext").style.display = (step >= 2 && step <= 5) ? "inline-block" : "none";
     $("#btnSubmit").style.display = (step === 6) ? "inline-block" : "none";
+    $("#btnRestart").style.display = (step === 7) ? "inline-block" : "none";
 
     // Afficher l'étape seulement pour les pages 2-6 (5 étapes)
-    if (step === 1) {
-      $("#stepLabel").textContent = "";
-    } else if (step === 7) {
-      $("#stepLabel").textContent = "";
-    } else {
-      $("#stepLabel").textContent = `Étape ${step - 1} / 5`;
-    }
+    if (step >= 2 && step <= 6) $("#stepLabel").textContent = `Étape ${step - 1} / 5`;
+    else $("#stepLabel").textContent = "";
 
     const status = $("#status");
     status.style.display = "none";
@@ -392,9 +410,7 @@
       if (wizard.step > 1) showStep(wizard.step - 1);
     });
 
-    $("#btnStart").addEventListener("click", ()=> {
-      showStep(2);
-    });
+    $("#btnStart").addEventListener("click", ()=> showStep(2));
 
     $("#btnNext").addEventListener("click", ()=>{
       if (!validatePage(wizard.step)){
@@ -447,13 +463,13 @@
       if (ok) showStep(7);
     });
 
+    $("#btnRestart").addEventListener("click", ()=>{
+      form.reset();
+      wireConditional(schema);
+      showStep(1);
+    });
 
     showStep(1);
-    // Masquer l'objectif sur la page 1 au démarrage
-    const objective = $("#objective");
-    if (objective) {
-      objective.style.display = "none";
-    }
     console.log("[AlphaNC] tracking:", wizard.tracking);
   }
 
