@@ -325,6 +325,7 @@
       status.textContent = "Envoi en cours…";
       const res = await fetch(endpoint, {
         method: "POST",
+              mode: 'no-cors',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
