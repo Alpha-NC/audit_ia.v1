@@ -1,26 +1,25 @@
-# Audit IA (Wizard 7 pages) — GitHub Pages → n8n
+# Audit IA — GitHub Pages → n8n (FIX V2)
 
-## 1) Configuration
-- Ouvrez `schema.json`
-- Remplacez :
-  - `submission.endpoint` par votre URL n8n (webhook PROD)
-  - Exemple : `https://votre-n8n.com/webhook/audit-ia?token=VOTRE_TOKEN`
+## 1) Endpoint n8n
+Le formulaire envoie vers :
+https://n8n.srv1159833.hstgr.cloud/webhook/audit-ia?token=Vn3pK8tQm2Yx7Lw9aR4cJ6uZ1sF5hD0eGqB3nP7rT9wX2kM
 
-## 2) GitHub Pages
-Settings → Pages → Deploy from branch → main → /(root)
+## 2) Import workflow n8n
+Importer `n8n_workflow_import.json` dans n8n.
 
-## 3) CORS côté n8n (obligatoire)
-Ajoutez dans la réponse du workflow (Respond to Webhook) :
-- Access-Control-Allow-Origin: *
-- Access-Control-Allow-Headers: Content-Type
-- Access-Control-Allow-Methods: POST, OPTIONS
+⚠️ Le workflow inclut :
+- IF Token OK (vérifie `query.token`)
+- Notion Create Page (titre lisible)
+- Respond 200 renvoie un JSON: {ok:true, receivedAt, pageId}
 
-Si CORS bloque, vous verrez un message d’erreur côté page.
+## 3) IMPORTANT (Notion)
+Dans le node Notion, les propriétés utilisées sont :
+- company_name (rich_text)
+- contact_email (email)
 
-## 4) URL unique / tracking
-Ajoutez vos paramètres :
-- ?utm_source=linkedin&utm_medium=post&utm_campaign=audit_v1&variant=carousel
-- ?ref=partenaireX&campaign=deal_2026
+Si ta base Notion n’a pas ces propriétés EXACTEMENT, il faut les créer ou adapter les clés.
 
-Ils arrivent dans `meta.tracking.params` + `meta.tracking.tag`.
- 
+## 4) Test
+Sur GitHub Pages, envoi → F12 → Network → POST
+Tu dois voir en réponse :
+{"ok":true, "receivedAt":"...", "pageId":"..."}

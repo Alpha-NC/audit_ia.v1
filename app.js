@@ -31,13 +31,11 @@
   }
 
   function safeUUID(){
-    try{
-      if (crypto && crypto.randomUUID) return crypto.randomUUID();
-    }catch(_){}
+    try{ if (crypto && crypto.randomUUID) return crypto.randomUUID(); }catch(_){}
     return "sid_" + Math.random().toString(16).slice(2) + "_" + Date.now();
   }
 
-  // ✅ URL UNIQUE / TRACKING (UTM + ref/variant + sessionId)
+  // URL UNIQUE / TRACKING
   function buildTracking(schema){
     const cfg = (schema && schema.tracking) || {};
     if (cfg.enabled === false) return {};
@@ -50,18 +48,12 @@
 
     const params = {};
     for (const [k,v] of sp.entries()){
-      if (includeAll || allow.includes(k)){
-        params[k] = v;
-      }
+      if (includeAll || allow.includes(k)) params[k] = v;
     }
 
-    // alias (?source=linkedin)
     const alias = (from, to) => { if (params[from] && !params[to]) params[to] = params[from]; };
-    alias("source","utm_source");
-    alias("medium","utm_medium");
-    alias("campaign","utm_campaign");
-    alias("content","utm_content");
-    alias("term","utm_term");
+    alias("source","utm_source"); alias("medium","utm_medium"); alias("campaign","utm_campaign");
+    alias("content","utm_content"); alias("term","utm_term");
 
     const LS_KEY = "alphaNC_audit_sessionId";
     let sessionId = localStorage.getItem(LS_KEY);
@@ -83,12 +75,7 @@
       pageUrl: window.location.href,
       path: window.location.pathname,
       params,
-      tag:
-        params.utm_campaign ||
-        params.ref ||
-        params.variant ||
-        params.utm_source ||
-        "direct"
+      tag: params.utm_campaign || params.ref || params.variant || params.utm_source || "direct"
     };
 
     if (cfg.includeReferrer) tracking.referrer = document.referrer || "";
@@ -158,18 +145,17 @@
       });
     });
     (schema.contact && schema.contact.fields || []).forEach(f=>{
-      if (!f.layout && (f.id === "contact_firstname" || f.id === "contact_lastname" || f.id === "contact_email")) f.layout = "half";
+      if (!f.layout && (f.id === "contact_name" || f.id === "contact_email")) f.layout = "half";
     });
   }
 
   function buildPages(schema){
     applyLayouts(schema);
-
     const pages = [];
     const mount = $("#pages");
     mount.innerHTML = "";
 
-    // Page 1: Hero
+    // Page 1
     const p1 = createEl("section", { class:"page", "data-step":"1" });
     p1.appendChild(createEl("div", { class:"hero" }, [
       createEl("div", { class:"logo" }, [ createEl("img", { src:(schema.assets && schema.assets.logo) || "alpha-nc-logo.png", alt:"Logo Alpha No-Code" }) ]),
@@ -178,14 +164,13 @@
     ]));
     p1.appendChild(createEl("div", { class:"card" }, [
       createEl("div", { style:"font-weight:700; color:#1D2B64; margin-bottom:8px;" }, ["Comment ça marche ?"]),
-      createEl("div", { style:"color:#64748B; line-height:1.55; margin-bottom:20px;" }, [
-        "5 étapes rapides. Répondez simplement."
-      ]),
-      createEl("button", { type:"button", class:"btn hero-start-btn", id:"btnStart" }, ["Commencer"])
+      createEl("div", { style:"color:#64748B; line-height:1.55;" }, [
+        "7 étapes rapides. Répondez simplement. À la fin, on envoie vos réponses automatiquement."
+      ])
     ]));
     pages.push(p1);
 
-    // Pages 2-5: sections
+    // Pages 2-5 sections
     const mapping = [
       {step:2, idx:0},
       {step:3, idx:1},
@@ -204,7 +189,7 @@
       pages.push(page);
     });
 
-    // Page 6: contact + send
+    // Page 6 contact
     const p6 = createEl("section", { class:"page", "data-step":"6" });
     const c6 = createEl("div", { class:"card" });
     c6.appendChild(createEl("h2", { class:"section-title" }, [(schema.contact && schema.contact.title) || "Coordonnées"]));
@@ -212,14 +197,13 @@
     (schema.contact && schema.contact.fields || []).forEach(q => g6.appendChild(renderField(Object.assign({}, q, { number:null }))));
     c6.appendChild(g6);
     p6.appendChild(c6);
-
     p6.appendChild(createEl("div", { class:"card", style:"margin-top:14px;" }, [
       createEl("div", { style:"font-weight:800; color:#1D2B64; font-size:18px; margin-bottom:6px;" }, ["Prêt à envoyer ?"]),
       createEl("div", { style:"color:#64748B; line-height:1.55;" }, ["Cliquez sur “Envoyer” dans le bandeau du bas."])
     ]));
     pages.push(p6);
 
-    // Page 7: success
+    // Page 7 success
     const p7 = createEl("section", { class:"page", "data-step":"7" });
     const c7 = createEl("div", { class:"card success" });
     c7.appendChild(createEl("div", { class:"success-badge" }, ["✅ Félicitations"]));
@@ -256,7 +240,7 @@
     $("#progress-bar").style.width = `${pct}%`;
     $("#progress-label").textContent = `${pct}% complété`;
 
-    if (wizard.step === 6 || wizard.step === 7){
+    if (wizard.step === 7){
       $("#progress-bar").style.width = "100%";
       $("#progress-label").textContent = "100% complété";
     }
@@ -305,7 +289,6 @@
     evalAll();
   }
 
-  // ✅ IMPORTANT : envoi DIRECT au webhook n8n (pas de proxy) + validation de la réponse
   async function sendToN8N(payload){
     const status = $("#status");
     status.style.display = "block";
@@ -314,51 +297,38 @@
     const endpoint = wizard.schema && wizard.schema.submission && wizard.schema.submission.endpoint;
     if (!endpoint){
       status.classList.add("error");
-      status.textContent = "⚠️ Endpoint n8n non configuré (schema.json → submission.endpoint).";
+      status.textContent = "⚠️ Endpoint n8n manquant dans schema.json.";
       return false;
     }
 
     try{
       status.textContent = "Envoi en cours…";
-
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        redirect: "follow"
+        body: JSON.stringify(payload)
       });
 
-      const raw = await res.text();
+      // IMPORTANT: on exige un JSON et un ok:true
+      const text = await res.text();
       let data = null;
-      try{ data = raw ? JSON.parse(raw) : null; }catch(_){}
-
-      console.log("[AuditIA] POST", endpoint, "status:", res.status, "response:", data ?? raw);
+      try{ data = text ? JSON.parse(text) : null; }catch(_){}
 
       if (!res.ok){
-        throw new Error("HTTP " + res.status);
+        throw new Error(`HTTP ${res.status} — ${text.slice(0,180)}`);
       }
 
-      // Si n8n renvoie autre chose que {"ok":true}, on ne “vend” pas du succès.
-      if (data && typeof data === "object" && "ok" in data && data.ok !== true){
-        status.classList.add("error");
-        status.textContent = "⚠️ n8n a répondu, mais pas en OK. Vérifiez votre workflow.";
-        return false;
-      }
-
-      // Si c’est du HTML (login / page n8n), c’est que tu n’as pas tapé le webhook.
-      if (!data && /<html/i.test(raw)){
-        status.classList.add("error");
-        status.textContent = "⚠️ Réponse HTML reçue (pas le webhook). Vérifie l’URL /webhook/audit-ia.";
-        return false;
+      if (!data || data.ok !== true){
+        // Si n8n renvoie autre chose qu'un JSON {ok:true}, on ne valide pas.
+        throw new Error(`Réponse inattendue — ${text.slice(0,180)}`);
       }
 
       status.textContent = "✅ Réponses envoyées. Merci !";
       return true;
-
     }catch(err){
       console.error(err);
       status.classList.add("error");
-      status.textContent = "⚠️ Envoi échoué. Vérifie l’URL webhook + CORS + workflow actif (voir Console/Network).";
+      status.textContent = "⚠️ Envoi échoué. Ouvrez F12 → Network → la requête POST, et vérifiez la réponse n8n.";
       return false;
     }
   }
@@ -369,18 +339,12 @@
     wizard.step = step;
     wizard.pages.forEach(p => p.classList.toggle("active", p.getAttribute("data-step") === String(step)));
 
-    // Masquer l'objectif sur la page 1 et 7
-    const objective = $("#objective");
-    if (objective) objective.style.display = (step === 1 || step === 7) ? "none" : "block";
-
     $("#btnBack").style.display = (step === 1 || step === 7) ? "none" : "inline-block";
-    $("#btnNext").style.display = (step >= 2 && step <= 5) ? "inline-block" : "none";
+    $("#btnNext").style.display = (step >= 1 && step <= 5) ? "inline-block" : "none";
     $("#btnSubmit").style.display = (step === 6) ? "inline-block" : "none";
     $("#btnRestart").style.display = (step === 7) ? "inline-block" : "none";
 
-    // Afficher l'étape seulement pour les pages 2-6 (5 étapes)
-    if (step >= 2 && step <= 6) $("#stepLabel").textContent = `Étape ${step - 1} / 5`;
-    else $("#stepLabel").textContent = "";
+    $("#stepLabel").textContent = `Étape ${step} / 7`;
 
     const status = $("#status");
     status.style.display = "none";
@@ -406,11 +370,7 @@
     form.addEventListener("input", updateProgress);
     form.addEventListener("change", updateProgress);
 
-    $("#btnBack").addEventListener("click", ()=> {
-      if (wizard.step > 1) showStep(wizard.step - 1);
-    });
-
-    $("#btnStart").addEventListener("click", ()=> showStep(2));
+    $("#btnBack").addEventListener("click", ()=> showStep(Math.max(1, wizard.step - 1)));
 
     $("#btnNext").addEventListener("click", ()=>{
       if (!validatePage(wizard.step)){
@@ -420,7 +380,7 @@
         s.textContent = "⚠️ Il manque un champ obligatoire sur cette étape.";
         return;
       }
-      showStep(Math.min(6, wizard.step + 1));
+      showStep(Math.min(7, wizard.step + 1));
     });
 
     $("#btnSubmit").addEventListener("click", async ()=>{
@@ -470,6 +430,7 @@
     });
 
     showStep(1);
+    console.log("[AlphaNC] endpoint:", schema.submission && schema.submission.endpoint);
     console.log("[AlphaNC] tracking:", wizard.tracking);
   }
 
