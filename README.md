@@ -23,3 +23,4 @@ Ajoutez vos paramètres :
 - ?ref=partenaireX&campaign=deal_2026
 
 Ils arrivent dans `meta.tracking.params` + `meta.tracking.tag`.
+ 
