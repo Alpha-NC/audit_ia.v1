@@ -1,0 +1,231 @@
+{
+  "meta": {
+    "title": "Audit IA – 10 Questions",
+    "brand": "Alpha No-Code",
+    "subtitle": "Un questionnaire simple pour identifier comment l’IA peut aider votre entreprise",
+    "objective": "Objectif : identifier rapidement vos points de friction, chiffrer un potentiel de gain, et proposer une première trajectoire.",
+    "lang": "fr-FR"
+  },
+  "assets": {
+    "logo": "alpha-nc-logo.png",
+    "fonts": {
+      "regular": "Montserrat-Regular.ttf",
+      "bold": "Montserrat-Bold.ttf"
+    }
+  },
+  "tracking": {
+    "enabled": true,
+    "includeReferrer": true,
+    "includeUserAgent": true,
+    "includeAllParams": false,
+    "allowParams": [
+      "utm_source",
+      "utm_medium",
+      "utm_campaign",
+      "utm_content",
+      "utm_term",
+      "source",
+      "campaign",
+      "medium",
+      "content",
+      "term",
+      "ref",
+      "variant",
+      "token"
+    ]
+  },
+  "submission": {
+    "endpoint": "https://n8n.srv1159833.hstgr.cloud/webhook-test/audit-ia?token=Vn3pK8tQm2Yx7Lw9aR4cJ6uZ1sF5hD0eGqB3nP7rT9wX2kM",
+    "method": "POST",
+    "contentType": "application/json"
+  },
+  "sections": [
+    {
+      "id": "section1",
+      "title": "Section 1 · Contexte de l’entreprise",
+      "questions": [
+        {
+          "id": "q1_people",
+          "number": 1,
+          "label": "Combien de personnes travaillent actuellement dans votre entreprise (vous inclus) ?",
+          "type": "number",
+          "unit": "personnes",
+          "placeholder": "Ex. : 1, 7, 25…",
+          "min": 0,
+          "step": 1,
+          "required": true
+        },
+        {
+          "id": "q2_domain",
+          "number": 2,
+          "label": "Quel est le domaine principal de votre activité ?",
+          "type": "text",
+          "placeholder": "Ex. : artisanat, agence marketing, cabinet HSE…",
+          "required": true
+        },
+        {
+          "id": "q3_pains",
+          "number": 3,
+          "label": "Quelles sont aujourd’hui les trois principales difficultés opérationnelles ?",
+          "type": "textarea",
+          "rows": 4,
+          "placeholder": "Ex. : gestion du temps, prospection, suivi client…",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "section2",
+      "title": "Section 2 · Vos processus actuels",
+      "questions": [
+        {
+          "id": "q4_hours",
+          "number": 4,
+          "label": "Combien d’heures par semaine consacrez-vous à des tâches répétitives ?",
+          "type": "number",
+          "unit": "h / semaine",
+          "placeholder": "Ex. : 2,5",
+          "min": 0,
+          "step": 0.5,
+          "required": true
+        },
+        {
+          "id": "q5_automation_tools",
+          "number": 5,
+          "label": "Utilisez-vous déjà des solutions ou logiciels d’automatisation ? Si oui, lesquels ?",
+          "type": "textarea",
+          "rows": 3,
+          "placeholder": "Ex. : Zapier, Make, n8n, règles Gmail, macros Excel…",
+          "required": false
+        },
+        {
+          "id": "q6_main_tools",
+          "number": 6,
+          "label": "Quels sont vos outils principaux (CRM, comptabilité, communication, gestion de projet…) ?",
+          "type": "textarea",
+          "rows": 3,
+          "placeholder": "Ex. : HubSpot, Sage, Notion, Google Drive, WhatsApp, Trello…",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "section3",
+      "title": "Section 3 · Vos besoins en IA",
+      "questions": [
+        {
+          "id": "q7_ai_tested",
+          "number": 7,
+          "label": "Avez-vous déjà testé un outil d’intelligence artificielle (comme ChatGPT) ?",
+          "type": "radio",
+          "options": [
+            {
+              "value": "oui",
+              "label": "Oui"
+            },
+            {
+              "value": "non",
+              "label": "Non"
+            }
+          ],
+          "required": true
+        },
+        {
+          "id": "q7_ai_usage",
+          "number": "7.1",
+          "label": "Si oui, pour quelle utilisation ?",
+          "type": "textarea",
+          "rows": 3,
+          "placeholder": "Ex. : rédiger des emails, faire des devis, générer des idées…",
+          "required": false,
+          "showWhen": {
+            "field": "q7_ai_tested",
+            "equals": "oui"
+          }
+        },
+        {
+          "id": "q8_first_task",
+          "number": 8,
+          "label": "Quelle est la première tâche que vous aimeriez voir automatisée pour gagner du temps ou en efficacité ?",
+          "type": "textarea",
+          "rows": 4,
+          "placeholder": "Ex. : relances impayés, suivi prospects, création de devis, planning…",
+          "required": true
+        },
+        {
+          "id": "q9_budget",
+          "number": 9,
+          "label": "Quel budget seriez-vous prêt à investir chaque mois pour une solution d’automatisation par l’IA ?",
+          "type": "number",
+          "unit": "€ / mois",
+          "placeholder": "Ex. : 149",
+          "min": 0,
+          "step": 10,
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "section4",
+      "title": "Section 4 · Vos objectifs",
+      "questions": [
+        {
+          "id": "q10_roi",
+          "number": 10,
+          "label": "Quel retour sur investissement (ROI) minimum attendez-vous pour considérer l’adoption de l’IA comme pertinente ?",
+          "type": "number",
+          "unit": "%",
+          "placeholder": "Ex. : 30",
+          "min": 0,
+          "step": 1,
+          "required": true
+        }
+      ]
+    }
+  ],
+  "contact": {
+    "title": "Coordonnées",
+    "fields": [
+      {
+        "id": "contact_firstname",
+        "label": "Prénom",
+        "type": "text",
+        "placeholder": "Votre prénom",
+        "required": true
+      },
+      {
+        "id": "contact_lastname",
+        "label": "Nom",
+        "type": "text",
+        "placeholder": "Votre nom",
+        "required": true
+      },
+      {
+        "id": "contact_phone",
+        "label": "Téléphone",
+        "type": "tel",
+        "placeholder": "06 12 34 56 78",
+        "required": true
+      },
+      {
+        "id": "contact_email",
+        "label": "Email",
+        "type": "email",
+        "placeholder": "nom@domaine.com",
+        "required": true
+      },
+      {
+        "id": "company_name",
+        "label": "Entreprise",
+        "type": "text",
+        "placeholder": "Nom de l'entreprise",
+        "required": false
+      }
+    ]
+  },
+  "success": {
+    "title": "Étape suivante",
+    "subtitle": "Bravo — vous êtes officiellement sur la bonne voie du changement.",
+    "text": "Après réception du questionnaire, vous recevrez un plan d’action clair et personnalisé pour intégrer l’IA simplement, efficacement et de façon mesurable."
+  }
+}

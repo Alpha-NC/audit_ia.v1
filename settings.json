@@ -1,0 +1,8 @@
+{
+  "livePreview.serve.root": "/",
+  "livePreview.customExternalBrowser": "chrome",
+  "livePreview.autoRefreshPreview": "onAnyFileChange",
+  "livePreview.server.port": 8000
+}
+
+

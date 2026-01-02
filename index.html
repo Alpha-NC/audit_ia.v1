@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audit IA – 10 Questions · AlphaNC</title>
+
+  <style>
+    @font-face{ font-family:'Montserrat'; src:url('Montserrat-Regular.ttf') format('truetype'); font-weight:400; font-style:normal; }
+    @font-face{ font-family:'Montserrat'; src:url('Montserrat-Bold.ttf') format('truetype'); font-weight:700; font-style:normal; }
+  </style>
+
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div class="container">
+    <div class="shell">
+      <main class="content">
+        <form id="audit-form" autocomplete="on" novalidate>
+          <div id="pages" class="pages"></div>
+        </form>
+      </main>
+
+      <!-- Encadré objectif : toujours visible en bas -->
+      <section id="objective" class="topbar" aria-label="Objectif et progression">
+        <div class="topbar-row">
+          <div class="topbar-text" id="objective-text"></div>
+          <div class="topbar-meta">
+            <span id="progress-label">0% complété</span>
+            <span>Champs <span class="req-star">*</span> obligatoires</span>
+          </div>
+        </div>
+
+        <div class="progress" aria-label="Progression">
+          <div id="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <div class="nav">
+          <button type="button" class="btn ghost" id="btnBack">Retour</button>
+          <div class="nav-center" id="stepLabel">Étape 1 / 7</div>
+          <button type="button" class="btn" id="btnNext">Suivant</button>
+          <button type="button" class="btn" id="btnSubmit">Envoyer</button>
+          <button type="button" class="btn" id="btnRestart">Recommencer</button>
+        </div>
+
+        <div id="status" class="status" role="alert"></div>
+      </section>
+    </div>
+  </div>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
