@@ -100,18 +100,27 @@ body{
 }
 
 .logo{
-  width: 96px;
-  height: 96px;
-  margin: 0 auto 18px;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 12px;
   background: #fff;
-  border-radius: 14px;
+  border-radius: 20px;
   display:flex;
   align-items:center;
   justify-content:center;
   box-shadow: 0 10px 25px rgba(0,0,0,.18);
 }
 
-.logo img{ max-width: 78px; height:auto; display:block; }
+.logo img{ max-width: 110px; height:auto; display:block; }
+
+.brand-name{
+  margin: 0 0 22px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #00E5A8;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
 
 .hero h1{
   margin:0 0 10px;

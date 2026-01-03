@@ -159,6 +159,7 @@
     const p1 = createEl("section", { class:"page", "data-step":"1" });
     p1.appendChild(createEl("div", { class:"hero" }, [
       createEl("div", { class:"logo" }, [ createEl("img", { src:(schema.assets && schema.assets.logo) || "alpha-nc-logo.png", alt:"Logo Alpha No-Code" }) ]),
+      createEl("div", { class:"brand-name" }, ["Alpha No-Code"]),
       createEl("h1", {}, [(schema.meta && schema.meta.title) || "Audit IA – 10 Questions"]),
       createEl("p", {}, [(schema.meta && schema.meta.subtitle) || ""])
     ]));
