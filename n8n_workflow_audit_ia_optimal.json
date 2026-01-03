@@ -1,0 +1,403 @@
+{
+  "name": "Audit IA → Notion (Optimal)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "audit-ia",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "audit-ia-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.query.token }}",
+              "operation": "equals",
+              "value2": "Vn3pK8tQm2Yx7Lw9aR4cJ6uZ1sF5hD0eGqB3nP7rT9wX2kM"
+            }
+          ]
+        }
+      },
+      "id": "if-token-valid",
+      "name": "IF Token Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "company_name",
+              "value": "={{ $json.body.company_name || '' }}"
+            },
+            {
+              "name": "contact_firstname",
+              "value": "={{ $json.body.contact_firstname || '' }}"
+            },
+            {
+              "name": "contact_lastname",
+              "value": "={{ $json.body.contact_lastname || '' }}"
+            },
+            {
+              "name": "contact_name",
+              "value": "={{ ($json.body.contact_firstname || '') + ' ' + ($json.body.contact_lastname || '') }}"
+            },
+            {
+              "name": "contact_email",
+              "value": "={{ $json.body.contact_email || '' }}"
+            },
+            {
+              "name": "contact_phone",
+              "value": "={{ $json.body.contact_phone || '' }}"
+            },
+            {
+              "name": "q1_people",
+              "value": "={{ $json.body.q1_people || '' }}"
+            },
+            {
+              "name": "q2_domain",
+              "value": "={{ $json.body.q2_domain || '' }}"
+            },
+            {
+              "name": "q3_pains",
+              "value": "={{ $json.body.q3_pains || '' }}"
+            },
+            {
+              "name": "q4_hours",
+              "value": "={{ $json.body.q4_hours || '' }}"
+            },
+            {
+              "name": "q5_automation_tools",
+              "value": "={{ $json.body.q5_automation_tools || '' }}"
+            },
+            {
+              "name": "q6_main_tools",
+              "value": "={{ $json.body.q6_main_tools || '' }}"
+            },
+            {
+              "name": "q7_ai_tested",
+              "value": "={{ $json.body.q7_ai_tested || '' }}"
+            },
+            {
+              "name": "q7_ai_usage",
+              "value": "={{ $json.body.q7_ai_usage || '' }}"
+            },
+            {
+              "name": "q8_first_task",
+              "value": "={{ $json.body.q8_first_task || '' }}"
+            },
+            {
+              "name": "q9_budget",
+              "value": "={{ $json.body.q9_budget || '' }}"
+            },
+            {
+              "name": "q10_roi",
+              "value": "={{ $json.body.q10_roi || '' }}"
+            },
+            {
+              "name": "biggestChallenge",
+              "value": "={{ $json.body.biggestChallenge || $json.body.q3_pains || $json.body.q8_first_task || '' }}"
+            },
+            {
+              "name": "submittedAt",
+              "value": "={{ $json.body.submittedAt || $now.toISO() }}"
+            },
+            {
+              "name": "sessionId",
+              "value": "={{ $json.body.sessionId || '' }}"
+            },
+            {
+              "name": "trackingTag",
+              "value": "={{ $json.body.trackingTag || '' }}"
+            },
+            {
+              "name": "ref",
+              "value": "={{ $json.body.ref || '' }}"
+            },
+            {
+              "name": "variant",
+              "value": "={{ $json.body.variant || '' }}"
+            },
+            {
+              "name": "utmSource",
+              "value": "={{ $json.body.utmSource || $json.body.utm_source || '' }}"
+            },
+            {
+              "name": "utmMedium",
+              "value": "={{ $json.body.utmMedium || $json.body.utm_medium || '' }}"
+            },
+            {
+              "name": "utmCampaign",
+              "value": "={{ $json.body.utmCampaign || $json.body.utm_campaign || '' }}"
+            },
+            {
+              "name": "utmTerm",
+              "value": "={{ $json.body.utmTerm || $json.body.utm_term || '' }}"
+            },
+            {
+              "name": "utmContent",
+              "value": "={{ $json.body.utmContent || $json.body.utm_content || '' }}"
+            }
+          ]
+        }
+      },
+      "id": "clean-normalize-data",
+      "name": "Clean & Normalize Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [650, 200]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "create",
+        "databaseId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $env.NOTION_DATABASE_ID }}"
+        },
+        "title": "={{ $json.company_name || $json.contact_name || $json.contact_email || 'Lead Audit IA' }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "submittedAt",
+              "textContent": "={{ $json.submittedAt }}"
+            },
+            {
+              "key": "sessionId",
+              "textContent": "={{ $json.sessionId }}"
+            },
+            {
+              "key": "trackingTag",
+              "textContent": "={{ $json.trackingTag }}"
+            },
+            {
+              "key": "company_name",
+              "textContent": "={{ $json.company_name }}"
+            },
+            {
+              "key": "contact_name",
+              "textContent": "={{ $json.contact_name }}"
+            },
+            {
+              "key": "contact_email",
+              "emailValue": "={{ $json.contact_email }}"
+            },
+            {
+              "key": "contact_phone",
+              "phoneValue": "={{ $json.contact_phone }}"
+            },
+            {
+              "key": "q1_people",
+              "numberValue": "={{ $json.q1_people ? Number($json.q1_people) : null }}"
+            },
+            {
+              "key": "q2_domain",
+              "textContent": "={{ $json.q2_domain }}"
+            },
+            {
+              "key": "q3_pains",
+              "textContent": "={{ $json.q3_pains }}"
+            },
+            {
+              "key": "q4_hours",
+              "numberValue": "={{ $json.q4_hours ? Number($json.q4_hours) : null }}"
+            },
+            {
+              "key": "q5_automation_tools",
+              "textContent": "={{ $json.q5_automation_tools }}"
+            },
+            {
+              "key": "q6_main_tools",
+              "textContent": "={{ $json.q6_main_tools }}"
+            },
+            {
+              "key": "q7_ai_tested",
+              "textContent": "={{ $json.q7_ai_tested }}"
+            },
+            {
+              "key": "q7_ai_usage",
+              "textContent": "={{ $json.q7_ai_usage }}"
+            },
+            {
+              "key": "q8_first_task",
+              "textContent": "={{ $json.q8_first_task }}"
+            },
+            {
+              "key": "q9_budget",
+              "numberValue": "={{ $json.q9_budget ? Number($json.q9_budget) : null }}"
+            },
+            {
+              "key": "q10_roi",
+              "numberValue": "={{ $json.q10_roi ? Number($json.q10_roi) : null }}"
+            },
+            {
+              "key": "biggestChallenge",
+              "textContent": "={{ $json.biggestChallenge || $json.q3_pains || $json.q8_first_task || '' }}"
+            },
+            {
+              "key": "ref",
+              "textContent": "={{ $json.ref }}"
+            },
+            {
+              "key": "variant",
+              "textContent": "={{ $json.variant }}"
+            },
+            {
+              "key": "utmSource",
+              "textContent": "={{ $json.utmSource || $json.utm_source }}"
+            },
+            {
+              "key": "utmMedium",
+              "textContent": "={{ $json.utmMedium || $json.utm_medium }}"
+            },
+            {
+              "key": "utmCampaign",
+              "textContent": "={{ $json.utmCampaign || $json.utm_campaign }}"
+            },
+            {
+              "key": "utmTerm",
+              "textContent": "={{ $json.utmTerm || $json.utm_term }}"
+            },
+            {
+              "key": "utmContent",
+              "textContent": "={{ $json.utmContent || $json.utm_content }}"
+            }
+          ]
+        }
+      },
+      "id": "notion-create-page",
+      "name": "Notion - Create Page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [850, 200],
+      "credentials": {
+        "notionApi": {
+          "id": "{{ NOTION_CREDENTIAL_ID }}",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"ok\": true,\n  \"receivedAt\": $now.toISO(),\n  \"pageId\": $json.id,\n  \"pageUrl\": $json.url,\n  \"message\": \"Données enregistrées avec succès dans Notion\"\n} }}"
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 401,
+        "responseBody": "={{ {\n  \"ok\": false,\n  \"error\": \"Token invalide\",\n  \"message\": \"Le token d'authentification est manquant ou invalide\"\n} }}"
+      },
+      "id": "respond-error-token",
+      "name": "Respond Error (Token)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 500,
+        "responseBody": "={{ {\n  \"ok\": false,\n  \"error\": $json.error.message || 'Erreur inconnue',\n  \"message\": \"Une erreur s'est produite lors de l'enregistrement dans Notion\"\n} }}"
+      },
+      "id": "respond-error-notion",
+      "name": "Respond Error (Notion)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 400]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "IF Token Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Token Valid": {
+      "main": [
+        [
+          {
+            "node": "Clean & Normalize Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error (Token)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean & Normalize Data": {
+      "main": [
+        [
+          {
+            "node": "Notion - Create Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion - Create Page": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "Audit-IA",
+      "id": "audit-ia"
+    },
+    {
+      "name": "Notion",
+      "id": "notion"
+    }
+  ],
+  "meta": {
+    "instanceId": "audit-ia-notion-integration"
+  },
+  "pinData": {},
+  "versionId": "1.0.0"
+}
