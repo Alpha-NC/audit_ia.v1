@@ -1,0 +1,277 @@
+{
+  "name": "Audit IA → Notion (Mapping Custom)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "audit-ia",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [250, 300],
+      "webhookId": "audit-ia-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "token-check",
+              "leftValue": "={{ $('Webhook').item.json.query.token }}",
+              "rightValue": "Vn3pK8tQm2Yx7Lw9aR4cJ6uZ1sF5hD0eGqB3nP7rT9wX2kM",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "name": "IF Token OK",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "={{ $env.NOTION_DATABASE_ID }}",
+          "mode": "id"
+        },
+        "title": "={{ $json.company_name || $json.contact_name || $json.contact_email || 'Lead Audit IA' }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "submittedAt",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.submittedAt }}"
+                }
+              ]
+            },
+            {
+              "key": "sessionId",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.sessionId }}"
+                }
+              ]
+            },
+            {
+              "key": "trackingTag",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.trackingTag }}"
+                }
+              ]
+            },
+            {
+              "key": "company_name",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.company_name }}"
+                }
+              ]
+            },
+            {
+              "key": "contact_name",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.contact_name }}"
+                }
+              ]
+            },
+            {
+              "key": "contact_email",
+              "emailValue": "={{ $json.contact_email }}"
+            },
+            {
+              "key": "contact_phone",
+              "phoneValue": "={{ $json.contact_phone }}"
+            },
+            {
+              "key": "q1_people",
+              "numberValue": "={{ $json.q1_people ? Number($json.q1_people) : null }}"
+            },
+            {
+              "key": "q5_automation_tools",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.q5_automation_tools }}"
+                }
+              ]
+            },
+            {
+              "key": "biggestChallenge",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.biggestChallenge || $json.q3_pains || $json.q8_first_task || '' }}"
+                }
+              ]
+            },
+            {
+              "key": "ref",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.ref }}"
+                }
+              ]
+            },
+            {
+              "key": "variant",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.variant }}"
+                }
+              ]
+            },
+            {
+              "key": "utmSource",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.utmSource || $json.utm_source }}"
+                }
+              ]
+            },
+            {
+              "key": "utmMedium",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.utmMedium || $json.utm_medium }}"
+                }
+              ]
+            },
+            {
+              "key": "utmCampaign",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.utmCampaign || $json.utm_campaign }}"
+                }
+              ]
+            },
+            {
+              "key": "utmTerm",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.utmTerm || $json.utm_term }}"
+                }
+              ]
+            },
+            {
+              "key": "utmContent",
+              "richTextValues": [
+                {
+                  "textContent": "={{ $json.utmContent || $json.utm_content }}"
+                }
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+      "name": "Notion Create Page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [650, 200],
+      "credentials": {
+        "notionApi": {
+          "id": "1",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"ok\": true,\n  \"receivedAt\": $now.toISO(),\n  \"pageId\": $json.id,\n  \"pageUrl\": $json.url\n} }}",
+        "options": {}
+      },
+      "id": "d4e5f6a7-b8c9-0123-def1-234567890123",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 401,
+        "responseBody": "={{ {\n  \"ok\": false,\n  \"error\": \"Token invalide\"\n} }}",
+        "options": {}
+      },
+      "id": "e5f6a7b8-c9d0-1234-ef12-345678901234",
+      "name": "Respond 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [650, 400]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "IF Token OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Token OK": {
+      "main": [
+        [
+          {
+            "node": "Notion Create Page",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 401",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion Create Page": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-01-02T23:00:00.000Z",
+  "versionId": "1"
+}
